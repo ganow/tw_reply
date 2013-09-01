@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys, re
+import subprocess
+
+def replyto(user, text):
+
+    p = subprocess.Popen('tw --timeline.mention --id | grep @' +
+                         user +
+                         ' | tail -1',
+                         stdout=subprocess.PIPE,
+                         shell=True)
+    target_tw = [x.rstrip().decode('utf-8') for x in p.stdout.readlines()][0]
+    print 'target tweet :', target_tw
+
+    pattern = re.compile(u'.*<(\d+)>$', re.U)
+    ans = pattern.match(target_tw, re.U)
+    target_id = ans.group(1)
+    print 'target tweet id:', target_id
+
+    reply_body = '"@' + user + ' ' + text + '"'
+
+    p = subprocess.Popen('tw ' + reply_body + ' --id=' + target_id,
+                         shell=True)
+
+    p.wait()
+    
+if __name__ == '__main__':
+
+    TARGET = sys.argv[1]
+    TEXT   = sys.argv[2].decode('utf-8')
+
+    replyto(TARGET, TEXT)
+
